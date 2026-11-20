@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>0.9.39.3</Version>
+    <Author>CosmicCraft</Author>
+    <Name>CosmicCraft</Name>
+    <Punchline>Assistente de crafting para Cosmic Exploration.</Punchline>
+    <Description>Assistente de crafting com informações do artesão, planejamento de rotações e foco em qualidade e eficiência durante Cosmic Exploration.</Description>
+    <Tags>crafting;cosmic;exploration</Tags>
+  </PropertyGroup>
+</Project>
