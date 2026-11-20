@@ -1,6 +1,7 @@
 # CosmicCraft
 
 Plugin comunitario para Dalamud, voltado ao crafting em Cosmic Exploration. Gera macros e permite executar uma fabricacao por vez, com monitoramento e parada de seguranca.
+Experimental plugin; I will continue working on it to bring improvements and even new plugins.
 
 ## Instalacao
 
