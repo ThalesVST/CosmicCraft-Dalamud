@@ -4,15 +4,15 @@
     "Author": "CosmicCraft",
     "Name": "CosmicCraft",
     "InternalName": "SamplePlugin",
-    "AssemblyVersion": "0.9.40.2",
+    "AssemblyVersion": "0.9.42.0",
     "Description": "Assistente de crafting para Cosmic Exploration: gera macros e executa uma fabricação por vez.",
     "Punchline": "Macros de crafting para Cosmic Exploration.",
     "RepoUrl": "https://github.com/ThalesVST/CosmicCraft-Dalamud",
     "IconUrl": "https://raw.githubusercontent.com/ThalesVST/CosmicCraft-Dalamud/main/images/icon.png",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
-    "DownloadLinkInstall": "https://github.com/ThalesVST/CosmicCraft-Dalamud/releases/download/v0.9.40.2/CosmicCraft-v0.9.40.2.zip",
-    "DownloadLinkUpdate": "https://github.com/ThalesVST/CosmicCraft-Dalamud/releases/download/v0.9.40.2/CosmicCraft-v0.9.40.2.zip",
-    "DownloadLinkTesting": "https://github.com/ThalesVST/CosmicCraft-Dalamud/releases/download/v0.9.40.2/CosmicCraft-v0.9.40.2.zip"
+    "DownloadLinkInstall": "https://github.com/ThalesVST/CosmicCraft-Dalamud/releases/download/v0.9.42.0/CosmicCraft-v0.9.42.0.zip",
+    "DownloadLinkUpdate": "https://github.com/ThalesVST/CosmicCraft-Dalamud/releases/download/v0.9.42.0/CosmicCraft-v0.9.42.0.zip",
+    "DownloadLinkTesting": "https://github.com/ThalesVST/CosmicCraft-Dalamud/releases/download/v0.9.42.0/CosmicCraft-v0.9.42.0.zip"
   }
 ]
