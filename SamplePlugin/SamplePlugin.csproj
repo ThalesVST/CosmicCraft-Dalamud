@@ -11,6 +11,10 @@
     <Tags>crafting;cosmic;exploration</Tags>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Bundle a separately supplied, license-verified Raphael CLI binary when present. -->
+    <None Include="raphael-cli.exe" Condition="Exists('raphael-cli.exe')" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="Data\icon.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
