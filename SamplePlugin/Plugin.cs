@@ -38,6 +38,9 @@ public sealed class Plugin : IDalamudPlugin
     internal static IFramework Framework { get; private set; } = null!;
 
     [PluginService]
+    internal static ITextureProvider TextureProvider { get; private set; } = null!;
+
+    [PluginService]
     internal static IChatGui ChatGui { get; private set; } = null!;
 
     [PluginService]
@@ -75,6 +78,7 @@ public sealed class Plugin : IDalamudPlugin
                 HelpMessage = "Abre o assistente CosmicCraft."
             });
 
+        AddonProbe.CosmicMissionOpened += OnCosmicMissionOpened;
         Framework.Update += OnFrameworkUpdate;
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
@@ -94,8 +98,31 @@ public sealed class Plugin : IDalamudPlugin
 
     public void ToggleConfigUi() => configWindow.Toggle();
 
+    private void OnCosmicMissionOpened()
+{
+    Log.Information(
+        $"[CosmicCraft] Callback recebido. " +
+        $"AutoOpen={Configuration.AutoOpenOnMissionStart}, " +
+        $"Territorio={ClientState.TerritoryType}, " +
+        $"JanelaAntes={mainWindow.IsOpen}");
+
+    if (!Configuration.AutoOpenOnMissionStart)
+        return;
+
+    if (ClientState.TerritoryType != 1319)
+        return;
+
+    mainWindow.IsOpen = true;
+
+    Log.Information(
+        $"[CosmicCraft] Abertura solicitada. " +
+        $"JanelaDepois={mainWindow.IsOpen}");
+}
+
+
     public void Dispose()
     {
+
         Framework.Update -= OnFrameworkUpdate;
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
@@ -106,6 +133,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
 
         mainWindow.Dispose();
+        AddonProbe.CosmicMissionOpened -= OnCosmicMissionOpened;
         AddonProbe.Dispose();
         configWindow.Dispose();
     }

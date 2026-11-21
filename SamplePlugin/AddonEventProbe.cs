@@ -16,6 +16,9 @@ public sealed class AddonEventProbe : IDisposable
     private Dictionary<string, int> baseline = new(StringComparer.Ordinal);
     private readonly List<string> recent = new();
     private bool recording;
+    
+    // Sinal de inicializacao da interface de missao Cosmic Exploration.
+public event Action? CosmicMissionOpened;
 
     public AddonEventProbe(IAddonLifecycle lifecycle)
     {
@@ -32,24 +35,60 @@ public sealed class AddonEventProbe : IDisposable
         name.Contains("Synthesis", StringComparison.OrdinalIgnoreCase);
 
     private void OnAddon(AddonEvent type, AddonArgs args)
+{
+    // Detecta a inicializacao do addon de missao,
+    // independentemente do monitor de diagnostico.
+    bool missionOpened =
+        type == AddonEvent.PostSetup &&
+        string.Equals(
+            args.AddonName,
+            "WKSMission",
+            StringComparison.Ordinal);
+
+    // Mantem o diagnostico existente.
+    lock (gate)
     {
-        lock (gate)
+        if (recording)
         {
-            if (!recording) return;
-            var name = string.IsNullOrWhiteSpace(args.AddonName) ? "(sem nome)" : args.AddonName;
-            // PostUpdate dispara a cada frame; contar apenas addons potencialmente relevantes.
-            if (type == AddonEvent.PostUpdate && !Relevant(name)) return;
-            string key = $"{type}: {name}";
-            counts[key] = counts.GetValueOrDefault(key) + 1;
-            // Guardar apenas a primeira ocorrencia e marcos exponenciais de PostUpdate.
-            int n = counts[key];
-            if (type != AddonEvent.PostUpdate || (n & (n - 1)) == 0)
+            var name = string.IsNullOrWhiteSpace(args.AddonName)
+                ? "(sem nome)"
+                : args.AddonName;
+
+            if (type != AddonEvent.PostUpdate || Relevant(name))
             {
-                recent.Add($"{key} (total {n})");
-                if (recent.Count > 120) recent.RemoveAt(0);
+                string key = $"{type}: {name}";
+                counts[key] = counts.GetValueOrDefault(key) + 1;
+
+                int n = counts[key];
+
+                if (type != AddonEvent.PostUpdate || (n & (n - 1)) == 0)
+                {
+                    recent.Add($"{key} (total {n})");
+
+                    if (recent.Count > 120)
+                        recent.RemoveAt(0);
+                }
             }
         }
     }
+
+    // Notifica fora do lock, evitando executar
+    // callbacks enquanto o diagnostico esta bloqueado.
+   if (missionOpened)
+{
+    Plugin.Log.Information(
+        $"[CosmicCraft] WKSMission PostSetup detectado. " +
+        $"Territorio={Plugin.ClientState.TerritoryType}");
+
+    if (Plugin.ClientState.TerritoryType == 1319)
+    {
+        Plugin.Log.Information(
+            "[CosmicCraft] Enviando evento CosmicMissionOpened.");
+
+        CosmicMissionOpened?.Invoke();
+    }
+}
+}
 
     public string[] KnownAddonNames()
     {

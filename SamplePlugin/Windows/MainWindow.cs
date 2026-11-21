@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using System;
 using System.Numerics;
 using System.Collections.Generic;
@@ -40,6 +40,8 @@ public class MainWindow : Window, IDisposable
     private string itemIdStatus = "Aguardando AtkValue[3].";
     private string missionProbeStatus = "Clique para investigar tabelas WKSMission locais.";
     private readonly Plugin owner;
+    private string T(string value) => CosmicLocalization.T(value, owner.Configuration.Language);
+
     private string nodeProbeReport = "Capture com Efficiency Calculations fechado.";
     private string loadedAddonReport = "Capture os addons por ID com o painel fechado.";
     private string addonEventReport = "Inicie o monitoramento com o painel fechado.";
@@ -84,6 +86,8 @@ public class MainWindow : Window, IDisposable
     private string lastAutomaticCacheLookupKey = "";
     private readonly RaphaelStepTracker raphaelTracker = new();
     private bool showAdvancedPanels = false;
+
+    private string missionEventReport = "Aguardando captura de eventos.";
     private int macroPart = 0;
     // Executor: uma habilidade por vez, com confirmacao antes do proximo envio.
     private bool showExecutorDetails;
@@ -141,10 +145,10 @@ public class MainWindow : Window, IDisposable
     private string executorMessage = "Aguardando uma rotacao do Raphael.";
 
 
-    public MainWindow(Plugin plugin) : base("CosmicCraft v0.9.39.3###CosmicCraftMain")
+    public MainWindow(Plugin plugin) : base("CosmicCraft v0.9.42.0###CosmicCraftMain")
     {
         owner = plugin;
-        Size = new Vector2(690, 385);
+       Size = new Vector2(720, 365);
         SizeCondition = ImGuiCond.FirstUseEver;
     }
 
@@ -157,15 +161,40 @@ public class MainWindow : Window, IDisposable
         chatReader.Dispose();
     }
 
+    private void DrawBrandIcon(float size)
+    {
+        try
+        {
+            string path = System.IO.Path.Combine(
+                Plugin.PluginInterface.AssemblyLocation.DirectoryName!, "Data", "icon.png");
+            if (!System.IO.File.Exists(path)) return;
+            var wrap = Plugin.TextureProvider.GetFromFile(path).GetWrapOrDefault();
+            if (wrap is not null)
+            {
+                ImGui.Image(wrap.Handle, new Vector2(size, size));
+                ImGui.SameLine();
+            }
+        }
+        catch (Exception) { /* Optional decoration must never break crafting UI. */ }
+    }
+
     public override unsafe void Draw()
     {
-        ImGui.Text("CosmicCraft");
-        ImGui.SameLine();
-        ImGui.TextDisabled("  |  Cosmic Exploration");
-        ImGui.Separator();
+        DrawBrandIcon(36f);
+
+ImGui.TextColored(
+    new Vector4(0.95f, 0.82f, 0.55f, 1f),
+    "COSMICCRAFT");
+
+ImGui.SameLine();
+ImGui.TextDisabled("  |  Cosmic Exploration");
+
+ImGui.Spacing();
+ImGui.Separator();
+ImGui.Spacing();
         bool inCosmic = Plugin.ClientState.TerritoryType == 1319;
         if (!inCosmic)
-            ImGui.TextDisabled("Entre na Cosmic Exploration para utilizar o plugin.");
+            ImGui.TextDisabled(T("Entre na Cosmic Exploration para utilizar o plugin."));
 
         var jobId = (int)Plugin.PlayerState.ClassJob.RowId;
         string jobName = jobId switch
@@ -173,14 +202,37 @@ public class MainWindow : Window, IDisposable
             8 => "CRP", 9 => "BSM", 10 => "ARM", 11 => "GSM",
             12 => "LTW", 13 => "WVR", 14 => "ALC", 15 => "CUL", _ => $"ID {jobId}"
         };
-        ImGui.Text($"Classe: {jobName}  |  Nivel: {Plugin.PlayerState.Level}");
-        ImGui.Text($"Craftsmanship: {Plugin.PlayerState.GetAttribute(PlayerAttribute.Craftsmanship)}");
-        ImGui.Text($"Control: {Plugin.PlayerState.GetAttribute(PlayerAttribute.Control)}");
-        var player = Plugin.ObjectTable.LocalPlayer;
-        int cp = player is null ? 0 : (int)player.CurrentCp;
-        int maxCp = player is null ? 0 : (int)player.MaxCp;
-        ImGui.Text($"CP: {cp} / {maxCp}");
-        ImGui.Separator();
+        ImGui.TextColored(
+    new Vector4(0.95f, 0.82f, 0.55f, 1f),
+    $"{jobName}  |  Nivel {Plugin.PlayerState.Level}");
+
+ImGui.Spacing();
+
+int craftsmanship =
+    (int)Plugin.PlayerState.GetAttribute(PlayerAttribute.Craftsmanship);
+
+int control =
+    (int)Plugin.PlayerState.GetAttribute(PlayerAttribute.Control);
+
+var player = Plugin.ObjectTable.LocalPlayer;
+int cp = player is null ? 0 : (int)player.CurrentCp;
+int maxCp = player is null ? 0 : (int)player.MaxCp;
+
+ImGui.TextDisabled("Craftsmanship");
+ImGui.SameLine(160);
+ImGui.Text($"{craftsmanship}");
+
+ImGui.TextDisabled("Control");
+ImGui.SameLine(160);
+ImGui.Text($"{control}");
+
+ImGui.TextDisabled("CP");
+ImGui.SameLine(160);
+ImGui.Text($"{cp} / {maxCp}");
+
+ImGui.Spacing();
+ImGui.Separator();
+ImGui.Spacing();
 
         if (!inCosmic)
         {
@@ -190,7 +242,7 @@ public class MainWindow : Window, IDisposable
         var addon = Plugin.GameGui.GetAddonByName("Synthesis");
         if (addon.IsNull || !addon.IsReady || !addon.IsVisible)
         {
-            ImGui.TextDisabled("Nenhuma sintese ativa.");
+            ImGui.TextDisabled(T("Nenhuma sintese ativa."));
             ClearActiveState();
             return;
         }
@@ -272,7 +324,14 @@ public class MainWindow : Window, IDisposable
             }
         }
 
-        ImGui.TextColored(new Vector4(.3f, 1f, .5f, 1f), data.RecipeName);
+        ImGui.Spacing();
+ImGui.TextDisabled("RECEITA ATUAL");
+
+ImGui.TextColored(
+    new Vector4(0.95f, 0.82f, 0.55f, 1f),
+    data.RecipeName);
+
+ImGui.Spacing();
         // Only look up after MaxQuality has been read from the active synthesis window.
         // Recalculate if stats, recipe, or quality change; never copy previous recipe gains.
         string gainLookupKey = $"{recipeKey}|{candidateItemId}|{maxQuality}|{Plugin.PlayerState.Level}|{Plugin.PlayerState.GetAttribute(PlayerAttribute.Craftsmanship)}|{Plugin.PlayerState.GetAttribute(PlayerAttribute.Control)}";
@@ -316,7 +375,7 @@ public class MainWindow : Window, IDisposable
             (int)Plugin.PlayerState.GetAttribute(PlayerAttribute.Craftsmanship),
             (int)Plugin.PlayerState.GetAttribute(PlayerAttribute.Control));
         ImGui.Separator();
-        if (ImGui.Button("Configuracoes avancadas..."))
+        if (ImGui.Button(T("Configuracoes avancadas...")))
             showAdvancedPanels = true;
         if (showAdvancedPanels)
         {
@@ -330,18 +389,53 @@ public class MainWindow : Window, IDisposable
             ImGui.End();
             return;
         }
-        ImGui.TextDisabled("Ajustes e diagnosticos - janela independente");
+        ImGui.TextDisabled(T("Ajustes e diagnosticos - janela independente"));
         ImGui.Separator();
-        if (ImGui.CollapsingHeader("Raphael e qualidade"))
+        if (ImGui.CollapsingHeader(T("Idioma e apoio ao projeto") + "###CosmicLanguageSupport", ImGuiTreeNodeFlags.DefaultOpen))
         {
-            ImGui.InputText("Caminho do Raphael", ref raphaelPath, 512);
-            ImGui.Checkbox("Manipulation desbloqueada", ref raphaelManipulation);
-            ImGui.Checkbox("Usar Raphael", ref preferRaphael);
-            if (ImGui.Checkbox("Qualidade maxima automatica [17]", ref automaticQuality))
+            ImGui.Text(T("Idioma da interface"));
+            string language = owner.Configuration.Language;
+            if (ImGui.RadioButton("Português (Brasil)##CosmicPT", language != "en"))
+            {
+                owner.Configuration.Language = "pt-BR";
+                owner.Configuration.Save();
+            }
+            ImGui.SameLine();
+            if (ImGui.RadioButton("English##CosmicEN", language == "en"))
+            {
+                owner.Configuration.Language = "en";
+                owner.Configuration.Save();
+            }
+            ImGui.TextDisabled(T("Nomes das habilidades e comandos de macro nao sao traduzidos."));
+            if (ImGui.Button(T("Apoiar o projeto no Ko-fi") + "###CosmicDonate"))
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "https://ko-fi.com/tchulon",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Plugin.Log.Warning($"Could not open Ko-fi URL: {ex.Message}");
+                }
+            }
+            ImGui.SameLine();
+            ImGui.TextDisabled("CosmicCraft v0.9.42.0");
+        }
+        ImGui.Separator();
+        if (ImGui.CollapsingHeader(T("Raphael e qualidade")))
+        {
+            ImGui.InputText(T("Caminho do Raphael"), ref raphaelPath, 512);
+            ImGui.Checkbox(T("Manipulation desbloqueada"), ref raphaelManipulation);
+            ImGui.Checkbox(T("Usar Raphael"), ref preferRaphael);
+            if (ImGui.Checkbox(T("Qualidade maxima automatica [17]"), ref automaticQuality))
                 InvalidatePlan();
             if (!automaticQuality || detectedQuality <= 0)
             {
-                if (ImGui.InputInt("Qualidade maxima manual", ref maxQuality))
+                if (ImGui.InputInt(T("Qualidade maxima manual"), ref maxQuality))
                 {
                     maxQuality = Math.Max(0, maxQuality);
                     if (lastRecipeKey.Length > 0) qualityByRecipe[lastRecipeKey] = maxQuality;
@@ -352,7 +446,7 @@ public class MainWindow : Window, IDisposable
             ImGui.TextWrapped("Dados da receita: " + recipeLookupStatus);
         }
         ImGui.Separator();
-        if (ImGui.CollapsingHeader("Calibracao e ganhos"))
+        if (ImGui.CollapsingHeader(T("Calibracao e ganhos")))
         {
             DrawChatGains(data.RecipeName, jobId, data.Condition, state);
             DrawAutomaticGains(data.Condition, state);
@@ -361,7 +455,7 @@ public class MainWindow : Window, IDisposable
         if (!preferRaphael) DrawPlanner(state, (int)Plugin.PlayerState.Level, data.RecipeName, jobId,
             (int)Plugin.PlayerState.GetAttribute(PlayerAttribute.Craftsmanship),
             (int)Plugin.PlayerState.GetAttribute(PlayerAttribute.Control));
-        if (ImGui.CollapsingHeader("Diagnosticos de receita"))
+        if (ImGui.CollapsingHeader(T("Diagnosticos de receita")))
         {
             ImGui.TextWrapped(itemIdStatus);
             ImGui.TextWrapped("Identificacao: " + automaticGainStatus);
@@ -483,9 +577,9 @@ public class MainWindow : Window, IDisposable
         }
         if (raphaelResult is { Success: true } current && raphaelRecipeKey == lastRecipeKey)
         {
-            if (ImGui.CollapsingHeader("IDs de habilidades"))
+            if (ImGui.CollapsingHeader(T("IDs de habilidades")))
                 DrawActionIdDiagnostics(current.Actions);
-            if (ImGui.CollapsingHeader("Acompanhamento detalhado"))
+            if (ImGui.CollapsingHeader(T("Acompanhamento detalhado")))
                 DrawRaphaelTracking(state, current, data.Condition);
         }
         ImGui.End();
@@ -527,7 +621,7 @@ public class MainWindow : Window, IDisposable
         }
         if (valid && !executorMonitoring &&
             (raphaelResult is not { Success: true } || raphaelRecipeKey != lastRecipeKey) &&
-            ImGui.Button("Tentar carregar rotacao salva"))
+            ImGui.Button(T("Tentar carregar rotacao salva")))
         {
             if (raphaelCache.TryGet(cacheKey, out var saved))
             {
@@ -542,9 +636,10 @@ public class MainWindow : Window, IDisposable
         }
         bool busy = raphaelTask is { IsCompleted: false };
         if (!valid && raphaelResult is not { Success: true })
-            ImGui.TextDisabled("Abra uma sintese no passo 1 para calcular.");
-        if (busy) ImGui.Text("Raphael calculando...");
-        if (!busy && valid && !executorMonitoring && ImGui.Button("Calcular rotacao"))
+            ImGui.TextDisabled(T("Abra uma sintese no passo 1 para calcular."));
+        if (busy) ImGui.Text(T("Raphael calculando..."));
+        if (!busy && valid && !executorMonitoring &&
+            ImGui.Button(T("Calcular rotacao"), new Vector2(-1f, 30f)))
         {
             raphaelCancel?.Dispose();
             raphaelCancel = new CancellationTokenSource();
@@ -559,7 +654,7 @@ public class MainWindow : Window, IDisposable
                 false, raphaelManipulation);
             raphaelTask = RaphaelBridge.SolveAsync(request, raphaelCancel.Token);
         }
-        if (busy && ImGui.Button("Cancelar calculo"))
+        if (busy && ImGui.Button(T("Cancelar calculo"), new Vector2(-1f, 30f)))
             raphaelCancel?.Cancel();
 
         if (raphaelTask is { IsCompleted: true } completed)
@@ -591,14 +686,29 @@ public class MainWindow : Window, IDisposable
 
     private void DrawRaphaelMacros(string[] actions, CraftingState state)
     {
-        // Duas colunas compactas: executor e macro. A logica do executor nao muda.
+        // Layout visual: duas colunas alinhadas; nenhuma alteracao na logica.
+        ImGui.Spacing();
         ImGui.Separator();
+        ImGui.Spacing();
+
         ImGui.Columns(2, "##CosmicCraftCompactColumns", false);
-        ImGui.SetColumnWidth(0, Math.Max(275f, ImGui.GetContentRegionAvail().X * .47f));
-        ImGui.Text("AUTOMATICO");
+        float availableWidth = ImGui.GetContentRegionAvail().X;
+        ImGui.SetColumnWidth(0, Math.Max(240f, availableWidth * 0.43f));
+
+        ImGui.TextColored(
+            new Vector4(0.95f, 0.82f, 0.55f, 1f),
+            T("AUTOMATICO"));
+        // Folga vertical apos o titulo: os controles nao encostam na divisoria.
+        ImGui.Dummy(new Vector2(0f, 14f));
         DrawExecutorMonitor(actions, state);
+
         ImGui.NextColumn();
-        ImGui.Text("MACRO GERADA");
+        ImGui.TextColored(
+            new Vector4(0.95f, 0.82f, 0.55f, 1f),
+            T("MACRO GERADA"));
+        ImGui.Separator();
+        ImGui.Spacing();
+
         var generated = RaphaelMacroFormatter.Build(actions);
         if (!generated.Success)
         {
@@ -609,16 +719,17 @@ public class MainWindow : Window, IDisposable
             macroPart = Math.Clamp(macroPart, 0, generated.Parts.Length - 1);
             if (generated.Parts.Length > 1)
             {
-                if (ImGui.SmallButton("Anterior") && macroPart > 0) macroPart--;
+                if (ImGui.SmallButton(T("Anterior")) && macroPart > 0) macroPart--;
                 ImGui.SameLine();
                 ImGui.Text($"{macroPart + 1}/{generated.Parts.Length}");
                 ImGui.SameLine();
-                if (ImGui.SmallButton("Proximo") && macroPart + 1 < generated.Parts.Length) macroPart++;
+                if (ImGui.SmallButton(T("Proximo")) && macroPart + 1 < generated.Parts.Length) macroPart++;
             }
             string macroText = generated.Parts[macroPart];
             ImGui.InputTextMultiline("##CosmicMacroOutput", ref macroText, 4096,
                 new Vector2(-1, 150), ImGuiInputTextFlags.ReadOnly);
-            if (ImGui.Button("Copiar macro"))
+            ImGui.Spacing();
+            if (ImGui.Button(T("Copiar macro"), new Vector2(-1f, 30f)))
                 ImGui.SetClipboardText(macroText);
         }
         ImGui.Columns(1);
@@ -774,7 +885,7 @@ public class MainWindow : Window, IDisposable
 
     private void DrawActionIdDiagnostics(string[] actions)
     {
-        if (!ImGui.CollapsingHeader("Resolvedor de habilidades (v0.9.39.3)")) return;
+        if (!ImGui.CollapsingHeader("Resolvedor de habilidades (v0.9.40)")) return;
         int jobId = (int)Plugin.PlayerState.ClassJob.RowId;
         string key = jobId + "|" + string.Join("|", actions);
         ImGui.TextDisabled("Consulta manual: nenhuma varredura de tabelas durante o redesenho.");
@@ -836,7 +947,7 @@ public class MainWindow : Window, IDisposable
         DrawActionTypeProbe();
     }
 
-    // v0.9.39.3: identifica os tipos de acao conhecidos pelo assembly instalado.
+    // v0.9.40: identifica os tipos de acao conhecidos pelo assembly instalado.
     // Nao acessa ponteiros nem invoca ActionManager.
     private readonly List<string> actionTypeProbeLines = new();
     private bool actionTypeProbeReady;
@@ -844,7 +955,7 @@ public class MainWindow : Window, IDisposable
     private void DrawActionTypeProbe()
     {
         ImGui.Separator();
-        ImGui.Text("DIAGNOSTICO DE COMPATIBILIDADE (v0.9.39.3)");
+        ImGui.Text("DIAGNOSTICO DE COMPATIBILIDADE (v0.9.40)");
         ImGui.TextDisabled("Somente leitura. Nenhuma chamada a ActionManager e realizada.");
         if (ImGui.Button("Inspecionar tipos de acao (uma vez)"))
         {
@@ -888,14 +999,14 @@ public class MainWindow : Window, IDisposable
         DrawActionAvailabilityProbe();
     }
 
-    // v0.9.39.3: reflection read-only; never instantiates or calls ActionManager.
+    // v0.9.40: reflection read-only; never instantiates or calls ActionManager.
     private readonly List<string> actionManagerSignatureLines = new();
     private bool actionManagerSignatureReady;
 
     private void DrawActionManagerSignatureProbe()
     {
         ImGui.Separator();
-        ImGui.Text("ACTIONMANAGER - ASSINATURAS (v0.9.39.3)");
+        ImGui.Text("ACTIONMANAGER - ASSINATURAS (v0.9.40)");
         ImGui.TextDisabled("Somente metadados. Nenhum ponteiro e acessado; nenhum metodo e invocado.");
         if (ImGui.Button("Inspecionar API ActionManager (uma vez)"))
         {
@@ -944,13 +1055,13 @@ public class MainWindow : Window, IDisposable
             foreach (var line in actionManagerSignatureLines) ImGui.TextWrapped(line);
     }
 
-    // v0.9.39.3: consulta pontual do status bruto. Nao chama UseAction.
+    // v0.9.40: consulta pontual do status bruto. Nao chama UseAction.
     private readonly List<string> availabilityReport = new();
 
     private unsafe void DrawActionAvailabilityProbe()
     {
         ImGui.Separator();
-        if (ImGui.CollapsingHeader("Historico de paradas do executor (v0.9.39.3)"))
+        if (ImGui.CollapsingHeader("Historico de paradas do executor (v0.9.40)"))
         {
             ImGui.TextWrapped("Ultima parada: " + executorStopReason);
             ImGui.TextWrapped("Evento que sugeriu ressincronizacao: " + raphaelTracker.ResyncEventDiagnostic);
@@ -966,13 +1077,13 @@ public class MainWindow : Window, IDisposable
                     "\nEvento de resync: " + raphaelTracker.ResyncEventDiagnostic +
                     "\nEventos recentes: " + raphaelTracker.RecentChatDiagnostic);
         }
-        if (ImGui.CollapsingHeader("Ultima tentativa do executor (v0.9.39.3)"))
+        if (ImGui.CollapsingHeader("Ultima tentativa do executor (v0.9.40)"))
         {
             ImGui.TextWrapped(actionAttemptDiagnostics);
             if (ImGui.Button("Copiar diagnostico da tentativa"))
                 ImGui.SetClipboardText(actionAttemptDiagnostics);
         }
-        ImGui.Text("ACTIONMANAGER - STATUS BRUTO (v0.9.39.3)");
+        ImGui.Text("ACTIONMANAGER - STATUS BRUTO (v0.9.40)");
         ImGui.TextDisabled("Consulta somente ao clicar. Nenhuma habilidade e executada.");
         if (ImGui.Button("Consultar status das habilidades (uma vez)"))
         {
@@ -1147,7 +1258,7 @@ public class MainWindow : Window, IDisposable
             raphaelRecipeKey == lastRecipeKey && raphaelResult is { Success: true } &&
             Plugin.ClientState.TerritoryType == 1319;
         if (!canStart) ImGui.BeginDisabled();
-        if (ImGui.Button("Iniciar automatico", new Vector2(-1, 32)))
+        if (ImGui.Button(T("Iniciar automatico"), new Vector2(-1, 32)))
         {
             chatReader.ClearActionObservations();
             raphaelTracker.Start(lastRecipeKey, actions, state);
@@ -1170,12 +1281,20 @@ public class MainWindow : Window, IDisposable
             executorMessage = "Execucao automatica ativa: cada acao requer confirmacao.";
         }
         if (!canStart) ImGui.EndDisabled();
+        // Apenas espacamento entre Iniciar e Pausar/Parar.
+        // Evita uma linha horizontal atravessando os botoes.
+        ImGui.Spacing();
         if (!canStart && !executorMonitoring && !raphaelTracker.Finished && showAdvancedPanels)
             ImGui.TextDisabled("Disponivel apenas no passo 1, com sintese aberta e rotacao Raphael valida.");
         if (executorMonitoring)
         {
             if (singleActionSafetyLock) ImGui.BeginDisabled();
-            if (ImGui.Button(executorPaused ? "Continuar" : "Pausar"))
+            // Divide a largura da coluna igualmente entre Pausar e Parar.
+            float controlWidth = Math.Max(80f,
+                (ImGui.GetContentRegionAvail().X - ImGui.GetStyle().ItemSpacing.X) / 2f);
+            if (ImGui.Button(
+                executorPaused ? "Continuar" : "Pausar",
+                new Vector2(controlWidth, 30f)))
             {
                 executorPaused = !executorPaused;
                 executorMessage = executorPaused ? "Monitor pausado." : "Monitor retomado.";
@@ -1185,7 +1304,7 @@ public class MainWindow : Window, IDisposable
             }
             if (singleActionSafetyLock) ImGui.EndDisabled();
             ImGui.SameLine();
-            if (ImGui.Button("Parar"))
+            if (ImGui.Button(T("Parar"), new Vector2(controlWidth, 30f)))
             {
                 RecordExecutorTransition("Parada solicitada pelo usuario.");
                 executorMonitoring = false;
@@ -1228,7 +1347,11 @@ public class MainWindow : Window, IDisposable
         }
         if (automaticMode)
         {
-            if (ImGui.Button("Desativar automatico"))
+            ImGui.Spacing();
+
+if (ImGui.Button(
+    T("Desativar automatico"),
+    new Vector2(-1f, 30f)))
             {
                 RecordExecutorTransition("Automatico desativado pelo usuario.");
                 automaticMode = false;
@@ -2037,9 +2160,9 @@ public class MainWindow : Window, IDisposable
             ImGui.Text($"{stepNumber++}. {name} | P: {entry.Result.Progress} | Q: {entry.Result.Quality} | D: {entry.Result.Durability} | CP: {entry.Result.Cp}");
         }
         ImGui.Separator();
-        ImGui.Text("MACRO GERADA");
+        ImGui.Text(T("MACRO GERADA"));
         ImGui.TextWrapped(currentMacro);
-        if (!string.IsNullOrWhiteSpace(currentMacro) && ImGui.Button("Copiar macro"))
+        if (!string.IsNullOrWhiteSpace(currentMacro) && ImGui.Button(T("Copiar macro")))
             ImGui.SetClipboardText(currentMacro);
         ImGui.TextDisabled("Confira habilidades disponiveis e a rotacao antes de utilizar.");
     }
