@@ -72,8 +72,17 @@ public class MainWindow : Window, IDisposable
     private string lastGainLookupKey = "";
     private bool automaticQuality = true;
     private readonly Dictionary<string, int> qualityByRecipe = new();
-    private string raphaelPath = System.IO.Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "raphael-cli.exe");
+    private string raphaelPath = ResolveRaphaelPath();
+
+    private static string ResolveRaphaelPath()
+    {
+        var pluginDirectory = Plugin.PluginInterface.AssemblyLocation.DirectoryName!;
+        var bundled = System.IO.Path.Combine(pluginDirectory, "raphael-cli.exe");
+        if (System.IO.File.Exists(bundled)) return bundled;
+        // Compatibility with existing installations that keep Raphael in Downloads.
+        return System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "raphael-cli.exe");
+    }
     private Task<RaphaelBridge.Result>? raphaelTask;
     private CancellationTokenSource? raphaelCancel;
     private RaphaelBridge.Result? raphaelResult;
