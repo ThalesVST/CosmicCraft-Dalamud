@@ -2,7 +2,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
   <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.9.42.0</Version>
+    <Version>0.9.43.0</Version>
     <IconUrl>https://raw.githubusercontent.com/ThalesVST/CosmicCraft-Dalamud/main/images/icon.png</IconUrl>
     <Author>CosmicCraft</Author>
     <Name>CosmicCraft</Name>
@@ -13,10 +13,15 @@
   <ItemGroup>
     <!-- Bundle a separately supplied, license-verified Raphael CLI binary when present. -->
     <None Include="raphael-cli.exe" Condition="Exists('raphael-cli.exe')" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="LICENSE-RAPHAEL.txt"
+      Condition="Exists('LICENSE-RAPHAEL.txt')"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\icon.png" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
+
 
 

@@ -154,7 +154,7 @@ public class MainWindow : Window, IDisposable
     private string executorMessage = "Aguardando uma rotacao do Raphael.";
 
 
-    public MainWindow(Plugin plugin) : base("CosmicCraft v0.9.42.0###CosmicCraftMain")
+    public MainWindow(Plugin plugin) : base("CosmicCraft v0.9.43.0###CosmicCraftMain")
     {
         owner = plugin;
        Size = new Vector2(720, 365);
@@ -432,7 +432,7 @@ ImGui.Spacing();
                 }
             }
             ImGui.SameLine();
-            ImGui.TextDisabled("CosmicCraft v0.9.42.0");
+            ImGui.TextDisabled("CosmicCraft v0.9.43.0");
         }
         ImGui.Separator();
         if (ImGui.CollapsingHeader(T("Raphael e qualidade")))
@@ -2213,3 +2213,4 @@ if (ImGui.Button(
         ImGui.ProgressBar(fraction, new Vector2(-1, 18));
     }
 }
+
