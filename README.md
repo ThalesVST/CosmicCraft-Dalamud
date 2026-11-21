@@ -33,7 +33,25 @@
 
 ## Screenshots
 
-Screenshots of the in-game interface will be added here. 
+### Crafting status
+View your current crafting job, level, Craftsmanship, Control, and CP.
+
+![CosmicCraft crafting status](images/crafting-status.png)
+
+### Macro generator
+See the active recipe, generate a crafting rotation, and copy the resulting macro.
+
+![CosmicCraft macro generator](images/macro-generator.png)
+
+### Optional single-run execution
+Monitor the current macro execution, with pause and stop controls. The plugin is designed for one craft at a time.
+
+![CosmicCraft automatic execution](images/automatic-execution.png)
+
+### Dalamud plugin manager
+CosmicCraft v0.9.42.0 installed through a custom Dalamud repository.
+
+![CosmicCraft in Dalamud plugin manager](images/dalamud-plugin-manager.png)
 
 ## Feedback and issues
 
@@ -88,7 +106,21 @@ This is an unofficial community plugin. Third-party tools and automation may vio
 
 ### Imagens
 
-Capturas da interface no jogo serão adicionadas aqui.
+**Estado do artesão:** profissão atual, nível, Craftsmanship, Control e CP.
+
+![Estado do artesão no CosmicCraft](images/crafting-status.png)
+
+**Gerador de macros:** receita atual, rotação calculada e opção de copiar a macro.
+
+![Gerador de macros do CosmicCraft](images/macro-generator.png)
+
+**Execução opcional uma vez:** acompanhamento da execução, com controles para pausar e parar. Uma fabricação por vez.
+
+![Execução automática do CosmicCraft](images/automatic-execution.png)
+
+**Gerenciador do Dalamud:** CosmicCraft v0.9.42.0 instalado pelo repositório personalizado.
+
+![CosmicCraft instalado no Dalamud](images/dalamud-plugin-manager.png)
 
 ### Problemas e sugestões
 
