@@ -1,6 +1,7 @@
-# 🌌 CosmicCraft - created with AI
+# 🌌 CosmicCraft
 
-**A crafting assistant for Final Fantasy XIV's Cosmic Exploration, built as a community Dalamud plugin.**
+**A crafting assistant for Final Fantasy XIV's Cosmic Exploration, built as a community Dalamud plugin. -created with AI
+**
 
 **Current release:** [v0.9.42.0](https://github.com/ThalesVST/CosmicCraft-Dalamud/releases/tag/v0.9.42.0) · [Português abaixo](#português)
 
