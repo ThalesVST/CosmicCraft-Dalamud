@@ -1,4 +1,4 @@
-# 🌌 CosmicCraft
+# 🌌 CosmicCraft - created with AI
 
 **A crafting assistant for Final Fantasy XIV's Cosmic Exploration, built as a community Dalamud plugin.**
 
